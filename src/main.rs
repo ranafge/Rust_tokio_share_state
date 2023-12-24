@@ -37,12 +37,15 @@ async fn process(socket: TcpStream, db: Db) {
     let mut connection = Connection::new(socket);
     // byte to frame
     // let mut connection = connection.read_frame().await.unwrap(); // Option<Frame>
+    // println!("{:?}", connection.read_frame().await.unwrap()); //Some(Array([Bulk(b"set"), Bulk(b"hello"), Bulk(b"world")]))
     while let  Some(frame)= connection.read_frame().await.unwrap()  {
         let response = match Command::from_frame(frame).unwrap() {
             Set(cmd) => {
                 let mut db = db.lock().unwrap();
                 db.insert(cmd.key().to_string(), cmd.value().clone());
                 Frame::Simple("OK".to_string())
+                // OK is essential for successfull set operation.
+
             }
             Get(cmd) => {
                 let db = db.lock().unwrap();
@@ -52,6 +55,7 @@ async fn process(socket: TcpStream, db: Db) {
                     Frame::Null
                 }
             }
+            // panic for other command
             cmd => panic!("unimplemented: {:?}", cmd),
         };
         // Write the response to the client
