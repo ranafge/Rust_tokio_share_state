@@ -38,7 +38,10 @@ async fn process(socket: TcpStream, db: Db) {
     // byte to frame
     // let mut connection = connection.read_frame().await.unwrap(); // Option<Frame>
     // println!("{:?}", connection.read_frame().await.unwrap()); //Some(Array([Bulk(b"set"), Bulk(b"hello"), Bulk(b"world")]))
+
+    // while let section establish the connectin to process the fish, if connection is not establish then unwrap catch the error.
     while let  Some(frame)= connection.read_frame().await.unwrap()  {
+        // the process the fish here in this seciton and unwrap the option.
         let response = match Command::from_frame(frame).unwrap() {
             Set(cmd) => {
                 let mut db = db.lock().unwrap();
